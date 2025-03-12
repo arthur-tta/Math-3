@@ -20,3 +20,9 @@ public class Move
         this.direction = direction;
     }
 }
+
+public enum Difficulty
+{
+    BruteForce,
+    BruteForcePlus,
+}
