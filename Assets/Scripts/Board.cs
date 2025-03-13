@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
+using TMPro;
 using Unity.Burst.Intrinsics;
 using UnityEngine;
 
@@ -20,11 +22,12 @@ public class Board : Singleton<Board>
     private List<Diamond> diamondList = new List<Diamond>();
 
     // combo & score
+    public GameObject popupPrefab;
     private int combo;
-    private int score;
 
     // setup game mode
     private bool isPlaying;
+    private bool canPlay;
 
     private void Start()
     {
@@ -55,6 +58,7 @@ public class Board : Singleton<Board>
     public void StartGame()
     {
         StartCoroutine(InitializedBoard());
+        canPlay = true;
 
     }
 
@@ -80,13 +84,12 @@ public class Board : Singleton<Board>
 
     public void CheckSwap(Move nextMove)
     {
-        /*
-        if (isPlaying == false)
+        
+        if (isPlaying == false || canPlay == false)
         {
             return;
         }
-        isPlaying = false;
-        */
+
         int row = nextMove.position.x;
         int col = nextMove.position.y;
         Direction dir = nextMove.direction;
@@ -123,6 +126,8 @@ public class Board : Singleton<Board>
     }
     private void SwapDiamond(Move nextMove)
     {
+        isPlaying = false;
+
         Vector2Int pos = nextMove.position;
         Vector2Int targetPos = pos;
         switch (nextMove.direction)
@@ -244,6 +249,21 @@ public class Board : Singleton<Board>
         if (matchSet.Count > 0)
         {
             StartCoroutine(RemoveMatches(matchSet.ToList()));
+            combo++;
+
+            if(combo > 1)
+            {
+                GameObject comboPopup = Instantiate(popupPrefab, new Vector3(0, 100f, 0), Quaternion.identity);
+                comboPopup.transform.SetParent(transform.parent, false);
+                Popup popup = comboPopup.GetComponent<Popup>();
+                popup.ShowPopup("Combo x" + combo);
+                popup.GetComponent<TextMeshProUGUI>().color = Color.red;
+            }
+        }
+        else
+        {
+            combo = 0;
+            isPlaying = true;
         }
     }
 
@@ -269,7 +289,13 @@ public class Board : Singleton<Board>
         }
 
         DropAndFill();
-        CalculatorScore(matches);
+
+        int score = CalculatorScore(matches);
+        GameObject scorePopup = Instantiate(popupPrefab, Vector3.zero, Quaternion.identity);
+        scorePopup.transform.SetParent(transform.parent, false);
+        Popup popup = scorePopup.GetComponent<Popup>();
+        popup.ShowPopup("+" + score);
+        popup.GetComponent<TextMeshProUGUI>().color = Color.yellow;
     }
 
 
