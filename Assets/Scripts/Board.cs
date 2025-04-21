@@ -25,16 +25,21 @@ public class Board : Singleton<Board>
     public GameObject popupPrefab;
     private int combo;
 
+    // turn
+    private Turn turn;
+    private bool firstTime;
+
     // setup game mode
     private bool isPlaying;
     private bool canPlay;
+
+    private GameMode gameMode;
 
     private void Start()
     {
         SetUp();
         SetUpDiamondList();
 
-        StartGame();
     }
 
     private void SetUp()
@@ -53,13 +58,34 @@ public class Board : Singleton<Board>
                 cell.SetUp(new Vector2Int(row, col));
             }
         }
+
+        turn = Turn.PlayerA;
     }
 
-    public void StartGame()
+    public void StartGame(GameMode gameMode)
     {
-        StartCoroutine(InitializedBoard());
-        canPlay = true;
+        Time.timeScale = 3f;
 
+        StartCoroutine(InitializedBoard());
+        this.gameMode = gameMode;
+       
+
+        firstTime = true;
+    }
+
+    public void ResetGame()
+    {
+        firstTime = true;
+        ClearBoard();
+    }
+
+    private void ClearBoard()
+    {
+        for(int i = 0; i <cells.Count; i++)
+        {
+            Destroy(cells[i].transform.GetChild(0).gameObject);
+        }
+        StartCoroutine(InitializedBoard());
     }
 
     private IEnumerator InitializedBoard()
@@ -79,51 +105,7 @@ public class Board : Singleton<Board>
         
         FindMatches();
     }
-
     
-
-    public void CheckSwap(Move nextMove)
-    {
-        
-        if (isPlaying == false || canPlay == false)
-        {
-            return;
-        }
-
-        int row = nextMove.position.x;
-        int col = nextMove.position.y;
-        Direction dir = nextMove.direction;
-        switch (dir)
-        {
-            case Direction.Left:
-                if (col > 0)
-                {
-                    SwapDiamond(nextMove);
-                }
-                break;
-
-            case Direction.Right:
-                if (col < columns - 1)
-                {
-                    SwapDiamond(nextMove);
-                }
-
-                break;
-            case Direction.Top:
-                if (row > 0)
-                {
-                    SwapDiamond(nextMove);
-                }
-                break;
-            case Direction.Bottom:
-                if (row < rows - 1)
-                {
-                    SwapDiamond(nextMove);
-                }
-                break;
-
-        }
-    }
     private void SwapDiamond(Move nextMove)
     {
         isPlaying = false;
@@ -249,8 +231,8 @@ public class Board : Singleton<Board>
         if (matchSet.Count > 0)
         {
             StartCoroutine(RemoveMatches(matchSet.ToList()));
-            combo++;
 
+            combo++;
             if(combo > 1)
             {
                 GameObject comboPopup = Instantiate(popupPrefab, new Vector3(0, 100f, 0), Quaternion.identity);
@@ -263,15 +245,52 @@ public class Board : Singleton<Board>
         else
         {
             combo = 0;
-            isPlaying = true;
+
+            if (firstTime)
+            {
+                firstTime = false;
+            }
+            switch (gameMode)
+            {
+                case GameMode.Test:
+                    if (turn == Turn.PlayerA)
+                    {
+                        turn = Turn.PlayerB;
+                        FindNextMovePlayerB();
+                    }
+                    else
+                    {
+                        turn = Turn.PlayerA;
+                        FindNextMovePlayerA();
+                    }
+                    break;
+            }
+            UIManager.Instance.GetUI<UIMainGame>().NextTurn();
+
         }
     }
 
+    private void FindNextMovePlayerA()
+    { 
+        Move nextMove = AIManager.Instance.GetPlayerANextMove(data);
+        if(nextMove != null)
+        {
+            SwapDiamond(nextMove);
+        }
+    }
+
+    private void FindNextMovePlayerB() 
+    {
+        Move nextMove = AIManager.Instance.GetPlayerBNextMove(data);
+        if (nextMove != null)
+        {
+            SwapDiamond(nextMove);
+        }
+    }
 
     private IEnumerator RemoveMatches(List<Vector2Int> matches)
     {
-        Debug.Log("remove mathches");
-
+        
         yield return new WaitForSeconds(0.2f);
         foreach (var match in matches)
         {
@@ -289,16 +308,19 @@ public class Board : Singleton<Board>
         }
 
         DropAndFill();
+        if (firstTime == false)
+        {
+            int score = CalculatorScore(matches);
+            GameObject scorePopup = Instantiate(popupPrefab, Vector3.zero, Quaternion.identity);
+            scorePopup.transform.SetParent(transform.parent, false);
+            Popup popup = scorePopup.GetComponent<Popup>();
+            popup.ShowPopup("+" + score);
+            popup.GetComponent<TextMeshProUGUI>().color = Color.yellow;
 
-        int score = CalculatorScore(matches);
-        GameObject scorePopup = Instantiate(popupPrefab, Vector3.zero, Quaternion.identity);
-        scorePopup.transform.SetParent(transform.parent, false);
-        Popup popup = scorePopup.GetComponent<Popup>();
-        popup.ShowPopup("+" + score);
-        popup.GetComponent<TextMeshProUGUI>().color = Color.yellow;
+            UIManager.Instance.GetUI<UIMainGame>().IncreaseScore(score);
+        }
+
     }
-
-
     private void DropAndFill()
     {
         for (int col = 0; col < columns; col++)
@@ -474,13 +496,6 @@ public class Board : Singleton<Board>
         return false;
     }
 
-
-
-
-
-
-
-
     private void SetUpDiamondList()
     {
         for (int i = 0; i < diamondTotal; i++)
@@ -497,5 +512,10 @@ public class Board : Singleton<Board>
                 diamonds.RemoveAt(0);
             }
         }
+    }
+
+    public void SetCanPlay(bool value)
+    {
+        canPlay = value;
     }
 }

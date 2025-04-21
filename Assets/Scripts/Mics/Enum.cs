@@ -21,8 +21,30 @@ public class Move
     }
 }
 
-public enum Difficulty
+public enum Mode
 {
+    Base,
     BruteForce,
     BruteForcePlus,
+}
+
+public enum GameMode
+{
+    Playing,
+    Test,
+    Train,
+}
+
+public enum Difficultly
+{
+    Easy,
+    Medium,
+    Hard,
+    Extream,
+}
+
+public enum Turn
+{
+    PlayerA,
+    PlayerB,
 }

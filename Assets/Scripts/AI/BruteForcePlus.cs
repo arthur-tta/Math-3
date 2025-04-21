@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BruteForce : BaseAI
+public class BruteForcePlus : BaseAI
 {
     public override Move GetMove(int[,] data)
     {
@@ -21,10 +21,13 @@ public class BruteForce : BaseAI
                             Vector2Int pos2 = new Vector2Int(x, y - 1);
                             if (IsValidMove(new Vector2Int(x, y), pos2, data)) // Kiểm tra xem có hợp lệ không
                             {
-                                int score = CalculatePotentialCombo(new Vector2Int(x, y), pos2, data); // Tính điểm
-                                if (score >= maxScore) // Nếu điểm cao hơn, cập nhật nước đi tốt nhất
+                                int score = EvaluateMove(new Vector2Int(x, y), pos2, data);
+                                int potentialComboScore = CalculatePotentialCombo(new Vector2Int(x, y), pos2, data);
+                                int totalScore = score + potentialComboScore;
+
+                                if (totalScore >= maxScore)
                                 {
-                                    maxScore = score;
+                                    maxScore = totalScore;
                                     bestMove = new Move(new Vector2Int(x, y), dir);
                                 }
                             }
@@ -33,10 +36,13 @@ public class BruteForce : BaseAI
                             pos2 = new Vector2Int(x, y + 1);
                             if (IsValidMove(new Vector2Int(x, y), pos2, data)) // Kiểm tra xem có hợp lệ không
                             {
-                                int score = CalculatePotentialCombo(new Vector2Int(x, y), pos2, data); // Tính điểm
-                                if (score >= maxScore) // Nếu điểm cao hơn, cập nhật nước đi tốt nhất
+                                int score = EvaluateMove(new Vector2Int(x, y), pos2, data);
+                                int potentialComboScore = CalculatePotentialCombo(new Vector2Int(x, y), pos2, data);
+                                int totalScore = score + potentialComboScore;
+
+                                if (totalScore >= maxScore)
                                 {
-                                    maxScore = score;
+                                    maxScore = totalScore;
                                     bestMove = new Move(new Vector2Int(x, y), dir);
                                 }
                             }
@@ -45,10 +51,13 @@ public class BruteForce : BaseAI
                             pos2 = new Vector2Int(x - 1, y);
                             if (IsValidMove(new Vector2Int(x, y), pos2, data)) // Kiểm tra xem có hợp lệ không
                             {
-                                int score = CalculatePotentialCombo(new Vector2Int(x, y), pos2, data); // Tính điểm
-                                if (score >= maxScore) // Nếu điểm cao hơn, cập nhật nước đi tốt nhất
+                                int score = EvaluateMove(new Vector2Int(x, y), pos2, data);
+                                int potentialComboScore = CalculatePotentialCombo(new Vector2Int(x, y), pos2, data);
+                                int totalScore = score + potentialComboScore;
+
+                                if (totalScore >= maxScore)
                                 {
-                                    maxScore = score;
+                                    maxScore = totalScore;
                                     bestMove = new Move(new Vector2Int(x, y), dir);
                                 }
                             }
@@ -57,10 +66,13 @@ public class BruteForce : BaseAI
                             pos2 = new Vector2Int(x + 1, y);
                             if (IsValidMove(new Vector2Int(x, y), pos2, data)) // Kiểm tra xem có hợp lệ không
                             {
-                                int score = CalculatePotentialCombo(new Vector2Int(x, y), pos2, data); // Tính điểm
-                                if (score >= maxScore) // Nếu điểm cao hơn, cập nhật nước đi tốt nhất
+                                int score = EvaluateMove(new Vector2Int(x, y), pos2, data);
+                                int potentialComboScore = CalculatePotentialCombo(new Vector2Int(x, y), pos2, data);
+                                int totalScore = score + potentialComboScore;
+
+                                if (totalScore >= maxScore)
                                 {
-                                    maxScore = score;
+                                    maxScore = totalScore;
                                     bestMove = new Move(new Vector2Int(x, y), dir);
                                 }
                             }
@@ -70,6 +82,6 @@ public class BruteForce : BaseAI
             }
         }
 
-        return bestMove; // Trả về nước đi tốt nhấ
+        return bestMove;
     }
 }

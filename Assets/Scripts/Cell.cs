@@ -64,7 +64,7 @@ public class Cell : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     private void SwapDiamond(Direction direction)
     {
         Move move = new Move(position, direction);
-        Board.Instance.CheckSwap(move);
+        //Board.Instance.CheckSwap(move);
     }
 
    

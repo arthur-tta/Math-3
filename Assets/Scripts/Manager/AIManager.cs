@@ -5,27 +5,37 @@ using UnityEngine;
 
 public class AIManager : Singleton<AIManager>
 {
-    private BaseAI currentAI;
-    private Difficulty difficulty;
+    private BaseAI playerA;
+    private BaseAI playerB;
+ 
 
-    public void StartGame(Difficulty difficulty)
+    public void SetUp(Mode modeA, Mode modeB)
     {
-        this.difficulty = difficulty;
-        switch (difficulty)
+        switch (modeA)
         {
-            case Difficulty.BruteForce:
-                //this.currentAI;
+            case Mode.BruteForce:
+                playerA = new BruteForce();
+                break;
+            case Mode.BruteForcePlus:
+                break;
+        }
+
+        switch (modeB)
+        {
+            case Mode.BruteForce:
+                playerB = new BruteForce();
+                break;
+            case Mode.BruteForcePlus:
                 break;
         }
     }
 
-    public Move GetNextMove(int[,] data)
+    public Move GetPlayerANextMove(int[,] data)
     {
-        return currentAI.GetMove(data);
+        return playerA.GetMove(data);
     }
-
-    public Difficulty GetDifficulty()
+    public Move GetPlayerBNextMove(int[,] data)
     {
-        return difficulty;
+        return playerB.GetMove(data);
     }
 }
